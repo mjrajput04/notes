@@ -61,15 +61,26 @@ which is what triggers the local-storage fallback.
 
 ## Downloading the PDF
 
-Press **Download PDF**, then in the print dialog:
+Press **Download PDF**. The file is rendered by headless Chrome through
+`/api/pdf`, not by the browser's print dialog.
 
-- Destination: **Save as PDF**
-- Paper size: **A2** (or the custom 1684 x 1190 pt entry)
-- Margins: **None**
-- Tick **Background graphics** — otherwise the green table headers print white
+That matters: the dialog's **Scale** and **Margins** settings silently rescale
+the sheet, which turns the 0.5pt rules into something thicker and shifts every
+measurement. Driving Chrome directly with `preferCSSPageSize` pins the page to
+the 1684 x 1190 pt the CSS declares, whatever the printer defaults are.
 
-The page CSS pins the sheet to exactly 1684 x 1190 pt, so the output matches the
-source format exactly.
+It needs Chrome or Edge on the machine. The usual install paths are tried
+automatically; set `CHROME_PATH` in `.env.local` if yours is elsewhere.
+
+**Print view** opens the document on its own at `/print`, with no editor around
+it. Saving from the browser there works too, but set Paper to **A2
+(1684x1190pt)**, Margins to **None** and Scale to **100%** or the output will be
+rescaled.
+
+| Method | Route | Does |
+| --- | --- | --- |
+| GET | `/api/pdf?id=<noteId>` | render that note to PDF (omit `id` for the latest) |
+| GET | `/print?id=<noteId>` | the bare document, for printing or screenshots |
 
 ## How the numbers work
 
