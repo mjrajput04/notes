@@ -1,6 +1,6 @@
 'use client';
 
-import { fmt, fix2, hasVal } from '@/lib/calc';
+import { fmt, fix2, hasVal, segmentHeading } from '@/lib/calc';
 import Grid, { SettleGrid } from '@/components/Grid';
 import {
   COLORS, HEAD, CLIENT, SETTLE, SALUTATION, SEGMENT, TRADES, CHARGES, FOOTER,
@@ -379,21 +379,26 @@ function ChargesTable({ data, computed }) {
   const c = computed.charges;
   const C = CHARGES;
   const eqSettle = data.charges.equitySettlementNo;
+  const e = computed.eq;
+  const f = computed.fo;
+  // A segment with no trades leaves its column blank, as the source note does.
+  const E = (v) => (e.present ? v : '');
+  const F = (v) => (f.present ? v : '');
 
   const rows = [
     ['Settlement Number', eqSettle, '', '', true],
-    ['Pay In / Pay Out Obligation', '', computed.netTotal, computed.netTotal],
-    ['Taxable Value of Supply (Brokerage)', '', -c.brokerage, -c.brokerage],
-    ['Exchange Transaction Charges', '', -c.exchTxn, -c.exchTxn],
-    ['CGST (9% on Brokerage, Exchange transaction charges, SEBI turnover fees and IPFT charges)', '', -c.cgst, -c.cgst],
-    ['SGST (9% on Brokerage, Exchange transaction charges, SEBI turnover fees and IPFT charges)', '', -c.sgst, -c.sgst],
-    ['IGST (18% on Brokerage, Exchange transaction charges, SEBI turnover fees and IPFT charges)', '', -c.igst, -c.igst],
-    ['UTT', '', -c.utt, -c.utt],
-    ['Securities Transaction Tax', '', -c.stt, -c.stt],
-    ['SEBI Turnover Fees', '', -c.sebi, -c.sebi],
-    ['Stamp Duty', '', -c.stamp, -c.stamp],
-    ['IPFT Charges', '', -c.ipft, -c.ipft],
-    ['Net Amount Receivable / Payable By Client', '', computed.netAmount, computed.netAmount],
+    ['Pay In / Pay Out Obligation', E(e.netTotal), F(f.netTotal), computed.netTotal],
+    ['Taxable Value of Supply (Brokerage)', E(-e.brokerage), F(-f.brokerage), -c.brokerage],
+    ['Exchange Transaction Charges', E(-e.exchTxn), F(-f.exchTxn), -c.exchTxn],
+    ['CGST (9% on Brokerage, Exchange transaction charges, SEBI turnover fees and IPFT charges)', E(-e.cgst), F(-f.cgst), -c.cgst],
+    ['SGST (9% on Brokerage, Exchange transaction charges, SEBI turnover fees and IPFT charges)', E(-e.sgst), F(-f.sgst), -c.sgst],
+    ['IGST (18% on Brokerage, Exchange transaction charges, SEBI turnover fees and IPFT charges)', E(-e.igst), F(-f.igst), -c.igst],
+    ['UTT', E(-e.utt), F(-f.utt), -c.utt],
+    ['Securities Transaction Tax', E(-e.stt), F(-f.stt), -c.stt],
+    ['SEBI Turnover Fees', E(-e.sebi), F(-f.sebi), -c.sebi],
+    ['Stamp Duty', E(-e.stamp), F(-f.stamp), -c.stamp],
+    ['IPFT Charges', E(-e.ipft), F(-f.ipft), -c.ipft],
+    ['Net Amount Receivable / Payable By Client', E(e.netAmount), F(f.netAmount), computed.netAmount],
   ];
 
   return (
@@ -425,8 +430,8 @@ function ChargesTable({ data, computed }) {
           <tr key={i} style={{ height: pt(C.rowH) }}>
             <td className="l">{label}</td>
             <td>{raw ? eq : eq === '' ? '' : fix2(eq)}</td>
-            <td>{raw ? fo : fix2(fo)}</td>
-            <td>{raw ? net : fix2(net)}</td>
+            <td>{raw ? fo : fo === '' ? '' : fix2(fo)}</td>
+            <td>{raw ? net : net === '' ? '' : fix2(net)}</td>
           </tr>
         ))}
       </tbody>
@@ -565,7 +570,7 @@ export default function ContractNote({ data, computed, pages }) {
           {data.note.salutation}
         </T>
         <T x={SEGMENT.x} baseline={SEGMENT.baseline} size={SEGMENT.size} bold>
-          {data.note.segmentTitle}
+          {data.note.segmentTitle || segmentHeading(computed.eq.present, computed.fo.present)}
         </T>
         {firstPageItems && firstPageItems.length ? <TradesTable items={firstPageItems} /> : null}
       </section>

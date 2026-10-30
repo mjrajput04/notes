@@ -39,6 +39,12 @@ function Select({ label, value, onChange, options }) {
   );
 }
 
+const SEGMENTS = [
+  { value: '', label: 'Auto (from description)' },
+  { value: 'EQ', label: 'Equity' },
+  { value: 'FO', label: 'Future & Options' },
+];
+
 const HEADER_FITS = [
   { value: 'fill', label: 'Stretch to the band (exact cover)' },
   { value: 'contain', label: 'Fit inside (keeps proportions)' },
@@ -216,7 +222,11 @@ export default function Editor({ data, set, computed }) {
             </div>
           ))}
           <Area label="Salutation line" value={data.note.salutation} onChange={(v) => setIn('note.salutation', v)} rows={2} />
-          <Field label="Segment heading" value={data.note.segmentTitle} onChange={(v) => setIn('note.segmentTitle', v)} />
+          <Field label="Segment heading" value={data.note.segmentTitle} onChange={(v) => setIn('note.segmentTitle', v)} placeholder="auto" />
+          <p className="hint">
+            Left blank it reads EQUITY, FUTURE &amp; OPTIONS or both, depending on what the
+            trades below are.
+          </p>
         </div>
       </details>
 
@@ -247,6 +257,9 @@ export default function Editor({ data, set, computed }) {
                 <Select label="Exchange" value={t.exchange} onChange={(v) => updateTrade(i, 'exchange', v)} options={EXCHANGES} />
                 <Select label="Buy / Sell" value={t.side} onChange={(v) => updateTrade(i, 'side', v)} options={[{ value: 'B', label: 'B - Buy' }, { value: 'S', label: 'S - Sell' }]} />
                 <Field label="Quantity" value={t.qty} onChange={(v) => updateTrade(i, 'qty', v)} placeholder="440" />
+              </div>
+              <div className="grid3">
+                <Select label="Segment" value={t.segment || ''} onChange={(v) => updateTrade(i, 'segment', v)} options={SEGMENTS} />
               </div>
               <div className="grid3">
                 <Field label="Gross rate" value={t.rate} onChange={(v) => updateTrade(i, 'rate', v)} placeholder="13.00" />
@@ -293,6 +306,29 @@ export default function Editor({ data, set, computed }) {
             <Field label="Stamp duty % (buy side)" value={data.charges.stampRate} onChange={(v) => setIn('charges.stampRate', v)} />
             <Field label="Equity settlement no" value={data.charges.equitySettlementNo} onChange={(v) => setIn('charges.equitySettlementNo', v)} />
           </div>
+          <p className="hint">
+            The rates above apply to the <b>Future &amp; Options</b> column. Cash equity is
+            charged differently, so it has its own set below. A trade lands in whichever
+            column its Segment says; left on Auto, anything with a CE, PE or FUT leg counts
+            as F&amp;O.
+          </p>
+          <div className="grid2">
+            <Field label="Equity: exchange txn %" value={data.charges.eq.exchTxnRate} onChange={(v) => setIn('charges.eq.exchTxnRate', v)} />
+            <Field label="Equity: SEBI fees %" value={data.charges.eq.sebiRate} onChange={(v) => setIn('charges.eq.sebiRate', v)} />
+            <Field label="Equity: IPFT %" value={data.charges.eq.ipftRate} onChange={(v) => setIn('charges.eq.ipftRate', v)} />
+            <Field label="Equity: STT %" value={data.charges.eq.sttRate} onChange={(v) => setIn('charges.eq.sttRate', v)} />
+            <Field label="Equity: stamp duty % (buy)" value={data.charges.eq.stampRate} onChange={(v) => setIn('charges.eq.stampRate', v)} />
+            <Select
+              label="Equity: STT charged on"
+              value={data.charges.eq.sttSide}
+              onChange={(v) => setIn('charges.eq.sttSide', v)}
+              options={[{ value: 'both', label: 'Both legs (delivery)' }, { value: 'sell', label: 'Sell leg only (intraday)' }]}
+            />
+          </div>
+          <p className="hint">
+            Defaults are NSE delivery. For intraday use STT 0.025 on the sell leg only and
+            stamp duty 0.003; on BSE the exchange txn rate is 0.00375.
+          </p>
           <Select
             label="GST"
             value={data.charges.gstMode}
