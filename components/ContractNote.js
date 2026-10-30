@@ -206,7 +206,7 @@ function ClientBlock({ client, note }) {
         {ph(client.address)}
       </T>
 
-      <div style={{ position: 'absolute', left: pt(SETTLE.x), top: pt(SETTLE.top) }}>
+      <div style={{ position: 'absolute', left: 0, top: 0, transform: `translate(${SETTLE.x}pt, ${SETTLE.top}pt)` }}>
       <SettleGrid
         colW={SETTLE.colW}
         rowH={SETTLE.rowH}
