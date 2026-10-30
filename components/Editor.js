@@ -39,6 +39,12 @@ function Select({ label, value, onChange, options }) {
   );
 }
 
+const HEADER_FITS = [
+  { value: 'fill', label: 'Stretch to the band (exact cover)' },
+  { value: 'contain', label: 'Fit inside (keeps proportions)' },
+  { value: 'cover', label: 'Cover the band and crop' },
+];
+
 function ImagePicker({ label, value, onChange }) {
   return (
     <label className="f">
@@ -133,6 +139,26 @@ export default function Editor({ data, set, computed }) {
           <p className="hint">
             The source note&apos;s text layer is Helvetica, so the first option reproduces it exactly.
           </p>
+          <ImagePicker
+            label="Header image (replaces the whole header band)"
+            value={data.brand.headerImage}
+            onChange={(v) => setIn('brand.headerImage', v)}
+          />
+          {data.brand.headerImage ? (
+            <>
+              <Select
+                label="Header image fit"
+                value={data.brand.headerFit}
+                onChange={(v) => setIn('brand.headerFit', v)}
+                options={HEADER_FITS}
+              />
+              <p className="hint">
+                The image fills the header band exactly: 1611.6 &times; 207.9pt, about 7.75:1.
+                Export it at 1946 &times; 251px or larger so it stays sharp. While an image is
+                set, the logo and firm-detail fields below are not drawn.
+              </p>
+            </>
+          ) : null}
           <ImagePicker label="Logo image" value={data.brand.logoImage} onChange={(v) => setIn('brand.logoImage', v)} />
           <div className="grid2">
             <Field label="Logo text (if no image)" value={data.brand.logoText} onChange={(v) => setIn('brand.logoText', v)} />

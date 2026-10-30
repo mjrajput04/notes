@@ -85,6 +85,36 @@ const multiline = (s) =>
 
 function DocHeader({ brand }) {
   const R = HEAD.right;
+
+  // One uploaded image stands in for the entire header band. The reference
+  // note’s header is itself a raster rather than live text, so this is the only
+  // way to reproduce its brand typeface exactly.
+  if (brand.headerImage) {
+    const B = HEAD.band;
+    // Chrome rounds a printed box to whole CSS pixels, a 0.75pt grid, so 1611.6pt
+    // of width comes out as 1611.75pt. Scaling by the rounding error cancels it.
+    const snap = (v) => Math.round((v * 4) / 3) * 0.75;
+    return (
+      <img
+        src={brand.headerImage}
+        alt=""
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          // Chrome snaps absolute offsets to whole CSS pixels; transforms are not.
+          transform:
+            `translate(${B.x}pt, ${B.y}pt) ` +
+            `scale(${B.w / snap(B.w)}, ${B.h / snap(B.h)})`,
+          transformOrigin: '0 0',
+          width: pt(B.w),
+          height: pt(B.h),
+          objectFit: brand.headerFit || 'fill',
+        }}
+      />
+    );
+  }
+
   return (
     <>
       <div
